@@ -25,3 +25,15 @@ jobs:
           context: .
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/static-site:latest
+
+      - name: Deploy on EC2 Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/static-site:latest
+            sudo docker stop static-site-container || true
+            sudo docker rm static-site-container || true
+            sudo docker run -d -p 80:80 --name static-site-container ${{ secrets.DOCKERHUB_USERNAME }}/static-site:latest
